@@ -8,53 +8,43 @@ st.set_page_config(page_title="Easy Asso")
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv("contacts.csv")
+        df = pd.read_csv("data/export-paiements-yin-ko-02_06_2021-25_04_2025.csv",sep=";")
     except FileNotFoundError:
-        df = pd.DataFrame(columns=["Nom", "Email", "Téléphone", "Statut", "Etat", "Note", "Dernier contact", "Relancer le"])
+        df = pd.DataFrame(columns=["Référence commande", "Référence paiement", "Montant total", "Date du paiement", "Statut du paiement", "Versé", "Date du versement", "Nom payeur", "Prénom payeur", "Email payeur", "Date de naissance", "Raison sociale", "SIREN", "Forme juridique", "Campagne", "Type de campagne", "Type", "Montant du tarif", "Montant des options", "Don supplémentaire", "Code Promo", "Montant du code promo", "Moyen de paiement", "Attestation", "Reçu fiscal", "Numéro de reçu", "Adresse payeur", "Code Postal payeur", "Ville payeur", "Pays payeur", "Commentaire"
+        
+])
+       
     return df
 
 df = load_data()
 
-#ajout contact
-st.sidebar.header("Ajouter un contact")
-
-with st.sidebar.form(key="add_contact"):
-    nom = st.text_input("Nom")
-    email = st.text_input("Email")
-    tel = st.text_input("Téléphone")
-    statut = st.text_input("Statut (adhérent, prospect, résilié)")
-    etat = st.text_input("Etat (actif, inactif...)")
-    note = st.text_area("Note")
-    dernier_contact = st.date_input("Dernier contact", datetime.date.today())
-    relance = st.date_input("Relancer le", dernier_contact + datetime.timedelta(days=30))
-    submit = st.form_submit_button("Ajouter")
-
-if submit:
-    new_row = pd.DataFrame([[nom, email, tel, tag, note, dernier_contact, relance]], columns=df.columns)
-    df = pd.concat([df, new_row], ignore_index=True)
-    df.to_csv("contacts.csv", index=False)
-    st.success("Contact ajouté !")
 
 
 #Tableau Adhérents
-st.title("Adhérents")
+st.title("Payement")
 
-filtre_statut = st.selectbox("Filtrer par statut", options=["Tous"] + list(df["Statut"].unique()))
+filtre_statut = st.selectbox("Filtrer par statut", options=["Tous"] + list(df["Campagne"].unique()))
 if filtre_statut != "Tous":
-    df = df[df["Statut"] == filtre_statut]
+    df = df[df["Campagne"] == filtre_statut]
 
-filtre_etat = st.selectbox("Filtrer par état", options=["Tous"] + list(df["Etat"].unique()))
-if filtre_etat != "Tous":
-   df = df[df["Etat"] == filtre_etat]
+filtre_statut = st.selectbox("Filtrer par statut", options=["Tous"] + list(df["Statut du paiement"].unique()))
+if filtre_statut != "Tous":
+    df = df[df["Statut du paiement"] == filtre_statut]
+
+
+
+#filtre_etat = st.selectbox("Filtrer par état", options=["Tous"] + list(df["etat"].unique()))
+#if filtre_etat != "Tous":
+#   df = df[df["Etat"] == filtre_etat]
 
 st.dataframe(df)
 
 aujourdhui = datetime.date.today()
-relances = df[df["Relancer le"] <= pd.to_datetime(aujourdhui)]
+#relances = df[df["Relancer le"] <= pd.to_datetime(aujourdhui)]
 
-if not relances.empty:
-    st.warning("📌 Contacts à relancer aujourd’hui ou en retard :")
-    st.table(relances[["Nom", "Email", "Relancer le"]])
+#if not relances.empty:
+#    st.warning("📌 Contacts à relancer aujourd’hui ou en retard :")
+#    st.table(relances[["Nom", "Email", "Relancer le"]])
 
 
 #Bouton de relance
